@@ -1,0 +1,52 @@
+1)What is database monitoring in MongoDB, and why is it important?
+
+"Database monitoring in MongoDB is the process of monitoring the database's health, current operations, and query performance. It helps 
+us identify slow queries, analyze database performance, and detect bottlenecks. Using tools like db.currentOp(), db.serverStatus(), 
+explain(), and the MongoDB Profiler, we can understand how queries are executed and optimize the database for better performance, 
+especially when handling many concurrent requests."
+
+
+2)db.currentOp() 
+
+"db.currentOp() provides information about the operations that are currently running in MongoDB. It shows active queries, connected 
+clients, the type of operation, how long each operation has been running, the namespace, and the command being executed. This information 
+helps us identify slow or stuck operations and troubleshoot performance issues."
+
+
+3)db.serverStatus()
+
+
+"db.serverStatus() is a MongoDB command used to check the overall health and status of the MongoDB server. It provides information such 
+as memory usage, active connections, network activity, database operations, uptime, locks, and storage engine statistics. It is mainly 
+used to monitor the server's performance, identify resource usage, and troubleshoot performance issues."
+
+
+4)What is explain() in MongoDB, and why do we use it?
+
+"explain() is a MongoDB method used to analyze how a query is executed. It provides details about the query execution plan, such as 
+whether MongoDB uses an index (IXSCAN) or performs a full collection scan (COLLSCAN), the number of documents examined, the number of 
+documents returned, and the execution time. It helps identify slow queries and optimize query performance."
+
+
+"COLLSCAN means Collection Scan. MongoDB scans every document in the collection to find the matching data because no suitable index is 
+available. IXSCAN means Index Scan. MongoDB uses an index to locate matching documents directly without scanning the entire collection, 
+making the query much faster and more efficient."
+
+
+5)What is the MongoDB Profiler, and why is it used?
+
+MongoDB Profiler is a built-in tool used to record database operations. It logs details such as the operation performed, namespace, 
+executed query, execution time, and timestamp. By analyzing these logs, we can identify slow queries and performance bottlenecks. 
+The profiler stores this information in the system.profile collection, which helps developers optimize query performance and troubleshoot 
+slow database operations
+
+
+//==============
+b) Perform essential maintenance tasks:
+
+
+6)What is log rotation in MongoDB, and why is it important?
+
+Log rotation is the process of archiving the current MongoDB log file and creating a new one. MongoDB continuously writes server events 
+such as startup, shutdown, connections, errors, and warnings to the log file. Over time, the log file becomes very large and consumes 
+disk space. By rotating logs, we keep log files organized, prevent storage from filling up, and make troubleshooting easier.
