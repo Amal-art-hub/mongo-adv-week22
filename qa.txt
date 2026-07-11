@@ -50,3 +50,563 @@ b) Perform essential maintenance tasks:
 Log rotation is the process of archiving the current MongoDB log file and creating a new one. MongoDB continuously writes server events 
 such as startup, shutdown, connections, errors, and warnings to the log file. Over time, the log file becomes very large and consumes 
 disk space. By rotating logs, we keep log files organized, prevent storage from filling up, and make troubleshooting easier.
+
+
+ 7)Upgrade the database to the latest version.
+
+ Upgrading the database means installing a newer version of MongoDB. By upgrading to the latest version, we can benefit from performance 
+ improvements, new features, bug fixes, security patches, and better stability.
+
+Before upgrading, a DBA (Database Administrator) should first take a database backup so that the data can be restored if anything goes 
+wrong. Then, the DBA should verify that the application and MongoDB driver are compatible with the new version. Next, the upgrade should 
+be tested in a staging or test environment to identify any issues without affecting real users. Once everything works as expected, the 
+production database can be upgraded. Finally, the DBA should verify that both the application and the database are working correctly 
+after the upgrade.
+
+ What should a DBA do before upgrading?
+
+A good DBA never upgrades immediately.
+
+Typical steps are:
+
+Take a database backup.
+Check compatibility with the application.
+Read the release notes to understand changes.
+Test the upgrade in a staging or test environment.
+Upgrade the production database.
+Verify that the application and database work correctly.
+
+
+
+
+8) Copy or clone databases for backup or testing purposes.
+
+
+
+
+Database cloning is the process of creating an exact copy of an existing database. It is commonly used for testing, development, backup, 
+migration, and verifying upgrades without affecting the production database.
+
+
+
+
+
+//=============
+
+
+
+1)What is a database backup, and why is it important?
+
+
+"A database backup is the process of creating a copy of the database and storing it in a separate location. It is important because it 
+allows us to recover data if it is lost due to accidental deletion, hardware failure, data corruption, software issues, or before 
+performing major operations like upgrading MongoDB. If any problem occurs, we can restore the database from the backup and minimize 
+downtime and data loss
+
+
+
+
+2)What are the different types of database backups? Explain each one.
+
+1. Full Backup: A full backup creates a complete copy of the entire database. It is the easiest to restore, but it requires more storage 
+space and takes longer to complete.
+
+2. Incremental Backup: An incremental backup stores only the changes made since the last backup, whether that was a full backup or 
+another incremental backup. It uses less storage and is faster to create, but restoring the database is more complex because all 
+incremental backups are required.
+
+3. Differential Backup: A differential backup stores all the changes made since the last full backup. It is larger than an incremental 
+backup but smaller than a full backup. Restoring is easier because only the last full backup and the latest differential backup are needed.
+
+
+
+
+3)What are the different ways to back up MongoDB?"
+
+
+Logical backup using mongodump, which exports the database into BSON files.
+Physical backup, where the database files are copied directly from the storage location.
+Cloud backup in MongoDB Atlas, which provides automated and scheduled backups."
+
+
+
+
+"There are three common ways to back up a MongoDB database: Logical Backup, Physical Backup, and Cloud Backup."
+
+1. Logical Backup (mongodump)
+What is it?
+
+"A logical backup uses the mongodump utility to export the database into BSON files. These files can later be restored using mongorestore."
+
+
+Scenario
+
+"Suppose a developer accidentally deletes a collection, or I need to migrate a database from one server to another. I would use mongodump 
+to create the backup and mongorestore to restore it when needed."
+
+Example
+mongodump --db=myDatabase --out=/backup
+When do we use it?
+Small to medium-sized databases.
+Database migration.
+Before upgrading MongoDB.
+Creating a backup before making major changes.
+2. Physical Backup
+What is it?
+
+"A physical backup involves copying MongoDB's actual data files from the server's data directory."
+
+Scenario
+
+"If a company has a very large production database of several terabytes, using mongodump may take too long. In that case, a physical
+backup or a filesystem snapshot is faster."
+
+How is it done?
+Stop MongoDB (or use filesystem snapshots if supported).
+Copy the data directory (for example, /data/db).
+Store the copy in a safe location.
+When do we use it?
+Very large databases.
+Disaster recovery.
+Fast server-level backups.
+3. Cloud Backup (MongoDB Atlas)
+What is it?
+
+"MongoDB Atlas provides automatic cloud backups. It creates scheduled backups and allows restoration through the Atlas dashboard."
+
+Scenario
+
+"Suppose an e-commerce company uses MongoDB Atlas. Instead of manually taking backups every day, Atlas automatically creates daily backups.
+ If data is lost, the administrator can restore it from the Atlas backup."
+
+When do we use it?
+Applications hosted on MongoDB Atlas.
+Production cloud environments.
+Organizations that want automated backup management.
+
+
+
+
+"What if you accidentally deleted the actual database? What would you do?"
+
+
+
+"First, I would identify the most recent valid backup. If I had created a logical backup using mongodump, I would restore it using 
+ongorestore. If the database was hosted on MongoDB Atlas, I would restore it from the latest cloud backup. If the organization uses 
+physical backups or filesystem snapshots, I would restore the database files from those backups. After restoring, I would verify that the 
+data is complete and that the application is working correctly
+
+
+
+what is mongodump?
+
+
+"mongodump is a MongoDB command-line utility used to create a logical backup of a MongoDB database. It exports the database into BSON 
+files, which can later be restored using mongorestore.
+
+I would use mongodump before upgrading MongoDB, before migrating a database to another server, or before making major changes to the 
+database. If data is accidentally deleted later, I can use mongorestore to restore the backup and recover the data
+
+
+mongodump --db=myDatabase --out=/backup
+
+mongorestore --db=myDatabase /backup/myDatabase
+
+"mongorestore is a MongoDB command-line utility used to restore a database from a backup created by mongodump. It reads the BSON backup 
+files and imports them back into MongoDB. It is commonly used after accidental data loss, database corruption, server migration, or when 
+recovering from a backup
+
+
+
+5)What is mongoexport? When would you use it?
+
+
+
+mongoexport is a MongoDB command-line utility used to export data from a MongoDB collection into JSON or CSV format. It is mainly used 
+for data sharing, reporting, analytics, or migrating data between applications. Unlike mongodump, it is not used for creating database 
+backups
+
+
+
+
+
+
+6)  what is replication 
+
+Replication in MongoDB is the process of maintaining multiple copies of the same data across multiple MongoDB servers. These servers 
+together form a replica set.
+
+In a replica set, one server acts as the Primary, which handles all write operations, while the other servers act as Secondaries, which 
+maintain copies of the data.
+
+Whenever a write operation happens on the Primary, MongoDB automatically records that operation in the oplog (operation log). The 
+Secondary servers read the oplog and apply the same operations to keep their data synchronized with the Primary.
+
+Replication provides:
+
+High availability — if the Primary server fails, an election happens and one of the Secondaries becomes the new Primary.
+Data redundancy — multiple copies of data exist, reducing the risk of data loss.
+Fault tolerance — the application can continue working even if one server goes down.
+
+Replication is automatically managed by MongoDB after the replica set is configured; administrators do not manually copy data between 
+servers.
+
+
+7)What is an oplog in MongoDB, and why is it important for backup and replication?
+
+The oplog (operation log) is a special capped collection in MongoDB that records all write operations performed on the Primary server in 
+a replica set, such as insert, update, and delete operations.
+
+It is important for replication because Secondary servers read the oplog entries from the Primary and apply the same operations to keep 
+their data synchronized.
+
+It is also important for backup and recovery because when we perform an oplog backup using mongodump --oplog, MongoDB captures the 
+database backup along with the operations that occur during the backup process. During restoration, mongorestore --oplogReplay replays 
+those operations to bring the database to a consistent state.
+
+
+
+
+8)Why do we use mongodump --oplog instead of a normal mongodump backup in
+
+Normal mongodump only captures the data that is being backed up. If any insert, update, or delete operations happen while the backup is 
+running, those changes may not be included in the backup, which can lead to an inconsistent restore.
+
+To solve this, we use mongodump --oplog in a MongoDB replica set. It performs the normal backup and also captures the oplog entries 
+generated during the backup process. During restoration, mongorestore --oplogReplay replays those operations, bringing the database to a 
+consistent state.
+
+
+
+
+9)What is the difference between an Oplog backup and an LVM snapshot backup in MongoDB?
+
+
+Oplog backup and LVM snapshot backup are different approaches.
+
+Oplog backup is a MongoDB-level backup method. When we run mongodump --oplog, MongoDB takes a backup of the data and also captures the 
+operations that happen during the backup process in the oplog. During restore, we use mongorestore --oplogReplay to replay those 
+operations and bring the database to a consistent state.
+
+LVM snapshot is a storage-level backup method. It creates a snapshot of the MongoDB data files at a specific point in time. It does not 
+track MongoDB operations like insert, update, or delete after the snapshot is created.
+
+The main difference is that oplog tracks database operations, while LVM snapshot captures the state of the storage at a particular 
+moment
+
+
+
+mongodump --db company --out backup
+==================================
+Creates a backup of a database.
+Stores data in BSON format.
+Used for normal backup.
+
+
+"I need to take a backup of my company database."
+
+
+mongorestore backup
+======================
+Restores data created by mongodump.
+
+"My collection was deleted or my server failed. I need to restore the backup."
+
+
+
+
+mongodump --oplog --out backup
+===============================
+Used with replica sets.
+Captures database backup + operations happening during backup.
+Helps maintain consistency for live databases.
+
+
+"The production database is running continuously, and I need a consistent backup without stopping writes."
+
+
+
+
+mongorestore --oplogReplay backup
+==================================
+
+Restores the backup.
+Replays oplog operations.
+
+"I restored the database, now I need to apply the changes that happened during the backup."
+
+
+
+rs.status()
+============
+Shows replica set members.
+Shows Primary and Secondary status.
+
+"I want to check whether my replica set is healthy."
+
+
+
+rs.initiate()
+==============
+
+Starts a replica set configuration.
+
+"I configured MongoDB servers and want to create a replica set."
+
+
+
+
+use local
+show collections
+=================
+
+oplog.rs
+"I want to verify that oplog exists."
+
+//========================================================================================
+
+1)What is replication in MongoDB, and why is it used?
+
+Replication in MongoDB is the process of maintaining multiple copies of the same data across multiple MongoDB instances. It is mainly 
+used to provide high availability, fault tolerance, and data redundancy. MongoDB implements replication using a Replica Set, which 
+consists of one Primary node and one or more Secondary nodes. The Primary handles all write operations, and by default also handles read 
+operations. The Secondary nodes continuously replicate changes from the Primary using the oplog. If the Primary fails, the Secondary 
+nodes automatically elect a new Primary, allowing the application to continue working with minimal downtime
+
+
+2)What is a Replica Set in MongoDB?
+
+A Replica Set is a group of MongoDB instances that maintain the same copy of data. It consists of one Primary node and one or more 
+Secondary nodes. The Primary handles write operations, while the Secondary nodes continuously replicate data from the Primary using the 
+oplog. If the Primary fails, the Replica Set automatically elects one of the Secondary nodes as the new Primary, ensuring high 
+availability and fault tolerance.
+
+
+3)"How does replication work in MongoDB?"
+
+
+Replication in MongoDB works by using a Replica Set, which consists of one Primary node and one or more Secondary nodes. When a client 
+performs a write operation, such as an insert, update, or delete, the request is sent to the Primary node. The Primary writes the data to 
+its database and records the operation in the oplog (operations log). The Secondary nodes continuously read the oplog and apply the same 
+operations to their own data, keeping themselves synchronized with the Primary. If the Primary node fails, the Replica Set automatically 
+holds an election, and one of the Secondary nodes becomes the new Primary. This ensures high availability with minimal downtime
+
+
+
+
+
+
+
+
+
+
+5)Question: What is an Arbiter in MongoDB?
+
+"An Arbiter is a special replica set member that does not store data but participates in elections by voting. It is used mainly to 
+provide an additional vote when we have an even number of members or when we need to maintain majority voting without adding another 
+data-bearing node
+"An Arbiter is used in a MongoDB replica set when we need an additional voting member for elections but do not want to add another 
+data-bearing node. A common scenario is when we have a two-member replica set with one Primary and one Secondary. If the Primary fails, 
+the Secondary alone cannot achieve majority votes to become Primary. By adding an Arbiter, we create a third voting member, which allows 
+the Secondary to win the election and become the new Primary. The Arbiter does not store any application data; it only participates in 
+elections
+
+configuring arbitor
+
+"To configure an Arbiter, I first started a MongoDB instance with the same replica set name using the --replSet option and a separate 
+port and data directory. Then I connected to the Primary node using mongosh and added the new node as an Arbiter using the rs.addArb() 
+command. After adding it, I verified the configuration using rs.status() to confirm that the Arbiter joined the replica set successfully 
+and was participating in elections
+
+mongod --replSet rs0 --port 27019 --dbpath "D:\MONGO\arbiter"=======you are starting a new MongoDB server instance that will act as an Arbiter 
+member
+mongosh --port 27017======Connect to Primary:
+rs.addArb("localhost:27019")============Add Arbiter:
+rs.status()========Verify:
+
+
+
+
+6)What are Hidden and Delayed nodes in MongoDB?"
+Hidden and Delayed nodes are special secondary members in a MongoDB replica set. A Hidden node maintains a copy of data but is hidden 
+from application clients, and it is commonly used for analytics workloads without affecting production traffic. A Delayed node maintains 
+data with a configured time delay behind the Primary, which helps recover from accidental operations like data deletion or incorrect 
+updates
+
+
+
+7)"How do you configure node priorities and manage elections in MongoDB?"
+
+
+"Node priority controls the likelihood of a replica set member becoming Primary during an election. We configure priority by modifying 
+the replica set configuration using rs.conf(), changing the member priority value, and applying it with rs.reconfig(). Elections are 
+automatically triggered when the Primary fails, and MongoDB selects a new Primary based on factors like priority, member availability, 
+and majority voting. We can also manually trigger an election using rs.stepDown() on the current Primary
+
+
+
+8)What is resync?
+
+A resync means making a Secondary node copy the latest data from the Primary again.
+We resync a node when a secondary falls too far behind the Primary or its data becomes inconsistent. During resynchronization, MongoDB 
+copies the latest data from another healthy replica set member so the node becomes synchronized again
+
+
+
+9)"What is rollback in MongoDB?"
+
+Rollback occurs when a former Primary rejoins the replica set after another member has already become the new Primary. If the old Primary 
+contains writes that were never replicated to a majority, MongoDB removes those writes to keep all replica set members consistent
+
+
+
+
+10)Interview Question: What is vertical scaling in MongoDB, and how do you implement it?
+
+
+
+Vertical scaling is the process of improving the performance of a MongoDB server by increasing the resources of the existing machine 
+instead of adding more servers. This typically involves upgrading the server's CPU, RAM, storage capacity, or disk speed.
+
+To implement vertical scaling, I would:
+
+Analyze the server's resource usage to identify bottlenecks.
+Upgrade hardware resources such as CPU, memory, SSD storage, or disk I/O performance.
+Restart the MongoDB server if required for the hardware changes to take effect.
+Monitor the database performance after the upgrade to ensure the additional resources improve query execution and overall performance.
+
+When is it used?
+
+Vertical scaling is suitable when a single MongoDB server is experiencing high CPU usage, insufficient memory, or storage limitations, but the workload can still be handled by one machine after upgrading its hardware.
+
+Example:
+
+Suppose an e-commerce application has grown from 10,000 to 500,000 users. The MongoDB server starts experiencing high CPU usage and 
+insufficient RAM, causing slower query performance. Instead of adding more database servers, the organization upgrades the existing 
+server from 8 GB RAM to 32 GB RAM, increases the CPU cores, and replaces the HDD with an SSD. This improves the server's ability to 
+process more requests and execute queries faster without changing the application architecture
+
+
+
+11) Explore horizontal scaling to distribute data across multiple nodes.
+
+What I learned:
+
+Horizontal scaling means increasing the capacity of a database by adding more servers (nodes) instead of upgrading a single server. In 
+MongoDB, this is achieved through sharding, where data is partitioned and distributed across multiple shards. Each shard stores a portion 
+of the data, and the mongos router directs client requests to the appropriate shard while config servers maintain the cluster metadata.
+
+Benefits:
+
+Distributes data across multiple nodes.
+
+Handles large volumes of data.
+
+Improves read and write scalability.
+
+Reduces the workload on a single server.
+
+Allows the system to grow by adding additional nodes when needed.
+
+Example:
+
+For a large e-commerce application, customer data can be divided among several shard servers. Instead of storing all records on one 
+machine, MongoDB distributes them across multiple nodes, enabling the application to support more users and data efficiently.
+
+
+
+way of configuring
+To set up sharding in MongoDB, I first start the Config Server replica set, which stores the cluster metadata. Next, I start the shard 
+servers, usually configured as replica sets, because they store the actual application data. Then I start the mongos router, which acts 
+as the entry point for client requests. After that, I connect to the mongos router, add the shard replica sets to the cluster, enable 
+sharding for the required database, and finally shard the collection by choosing an appropriate shard key. Once configured, MongoDB 
+automatically distributes the data across the shards
+
+
+
+
+1. Shard Key
+A shard key is the field used by MongoDB to distribute documents across different shards. Choosing a good shard key ensures balanced data 
+distribution and efficient query performance.
+
+2. Chunks
+A chunk is a subset of documents in a sharded collection. MongoDB automatically creates and moves chunks between shards to balance data 
+distribution
+
+3. Config Servers
+"Config Servers store the metadata of the sharded cluster, such as shard information, chunk locations, and cluster configuration. They do 
+not store user data
+
+4. Query Router (mongos)
+mongos is the query router in a sharded cluster. It receives client requests and routes them to the appropriate shard using metadata from 
+the Config Servers
+
+A MongoDB sharded cluster has four main components. The Shard Key determines how documents are distributed. The data is divided into 
+Chunks, which MongoDB automatically balances across shards. The Config Servers store metadata about the cluster and chunk locations. The 
+mongos Query Router receives client requests and routes them to the correct shard using the metadata from the Config Servers
+
+
+> Compare types of sharding and choose an appropriate shard key.
+
+"MongoDB supports ranged sharding and hashed sharding. Ranged sharding distributes data based on ranges of shard key values, making it 
+suitable for range queries. Hashed sharding distributes data using a hash of the shard key, providing a more even distribution of data 
+and avoiding hotspots.
+
+a) Ranged Sharding
+
+Documents are distributed based on a range of shard key values.
+Advantages
+Good for range queries.
+Easy to retrieve data within a range.
+Disadvantages
+If new customer IDs are always increasing, most new data goes to the last shard, creating a hotspot.
+
+b) Hashed Sharding
+
+MongoDB applies a hash function to the shard key before distributing data.
+
+Instead of storing sequential IDs on the same shard, the data is spread more evenly
+
+Advantages
+Even data distribution.
+Prevents one shard from becoming overloaded.
+Disadvantages
+Range queries are less efficient because related values may be stored on different shards.
+
+
+
+
+
+
+2. Choosing a Good Shard Key
+
+
+MongoDB supports two common sharding strategies: ranged sharding and hashed sharding. Ranged sharding stores documents based on key 
+ranges and is efficient for range queries, while hashed sharding uses a hash of the shard key to distribute data more evenly. When 
+selecting a shard key, I choose a field with high cardinality that evenly distributes data, matches common query patterns, and minimizes 
+hotspots
+
+
+
+
+ sharding best practices:
+
+ Ensure balanced data distribution across shards
+
+ If one shard stores 90% of the data and the other two store only 10%, then your cluster is not balanced.
+
+ Problems:
+
+Shard 1 becomes slow.
+CPU usage increases.
+Storage fills up faster.
+Most client requests go to Shard 1.
+
+This defeats the purpose of sharding.
+A balanced cluster
+Storage is shared.
+CPU load is shared.
+Queries are spread across servers.
+Performance improve
+
+
